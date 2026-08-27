@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-// dynamic import — avoids SSR issues with document/window
 const swal = async (opts: object) => {
   const { default: Swal } = await import("sweetalert2");
-  return (swal as (opts: object) => Promise<unknown>)(opts);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return Swal.fire(opts as any);
 };
 import { useAuth } from "@/contexts/AuthContext";
 import { CLASSES, REINOS, ARMAS, type Classe } from "@/types";

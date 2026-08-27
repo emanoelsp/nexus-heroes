@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 const swal = async (opts: object) => {
   const { default: Swal } = await import("sweetalert2");
-  return (swal as (opts: object) => Promise<unknown>)(opts);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return Swal.fire(opts as any);
 };
 import { useAuth } from "@/contexts/AuthContext";
 import { buscarPersonagem, equiparItem } from "@/services/personagens";

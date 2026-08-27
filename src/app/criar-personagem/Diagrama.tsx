@@ -58,11 +58,16 @@ function B({ id, blanks, onChange, onCheck, stepBlanks }: {
   }
   if (!stepBlanks.includes(id)) {
     return (
-      <span style={{
-        display: "inline-block", width: CFG[id].w, textAlign: "center",
-        fontFamily: "monospace", fontSize: "0.78rem", color: "rgba(148,163,184,0.2)",
-        border: "1px dashed rgba(255,255,255,0.07)", borderRadius: "4px", padding: "2px 4px",
-      }}>?</span>
+      <span
+        title="Desbloqueado na próxima etapa"
+        style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: CFG[id].w, fontFamily: "monospace", fontSize: "0.7rem",
+          color: "rgba(148,163,184,0.18)", padding: "2px 4px",
+          border: "1px dashed rgba(255,255,255,0.06)", borderRadius: "4px",
+          cursor: "not-allowed", userSelect: "none",
+        }}
+      >🔒</span>
     );
   }
   return <BlankInput id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} />;
@@ -316,19 +321,35 @@ export default function DiagramaStep({ step, blanks, onChange, onCheck, dicaAber
 }) {
   const done = corretos === total;
   const pct = Math.round((corretos / total) * 100);
+  const stepDone = stepBlanks.every(id => blanks[id]?.status === "ok");
+  const stepCorretos = stepBlanks.filter(id => blanks[id]?.status === "ok").length;
 
   return (
     <div>
       {/* Progress bar */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.4rem" }}>
         <span style={{ fontSize:"0.7rem", color: done ? "#22c55e" : "var(--muted)" }}>
-          {done ? "✅ Concluído!" : `${corretos} de ${total} campos`}
+          {done ? "✅ Todos os campos concluídos!" : `${corretos} de ${total} campos totais`}
         </span>
         <span style={{ fontSize:"0.7rem", color:"var(--primary-light)" }}>{pct}%</span>
       </div>
-      <div style={{ height:"4px", background:"rgba(255,255,255,0.06)", borderRadius:"99px", overflow:"hidden", marginBottom:"1rem" }}>
+      <div style={{ height:"4px", background:"rgba(255,255,255,0.06)", borderRadius:"99px", overflow:"hidden", marginBottom:"0.75rem" }}>
         <div style={{ height:"100%", borderRadius:"99px", transition:"width 0.4s ease", background: done ? "#22c55e" : "linear-gradient(90deg,#7c3aed,#a78bfa)", width:`${pct}%` }} />
       </div>
+
+      {/* Step completion banner */}
+      {stepDone && !done && (
+        <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", padding:"0.5rem 0.85rem", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:"8px", marginBottom:"0.75rem", fontSize:"0.75rem", color:"#86efac" }}>
+          <span>✓</span>
+          <span>Etapa {step + 1} concluída — clique em <b>Avançar</b> para desbloquear os próximos campos</span>
+        </div>
+      )}
+      {!stepDone && (
+        <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", padding:"0.4rem 0.85rem", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.18)", borderRadius:"8px", marginBottom:"0.75rem", fontSize:"0.72rem", color:"var(--primary-light)" }}>
+          <span>📝</span>
+          <span>Preencha os {stepBlanks.length - stepCorretos} campo{stepBlanks.length - stepCorretos !== 1 ? "s" : ""} desta etapa — os 🔒 serão desbloqueados nas próximas.</span>
+        </div>
+      )}
 
       {/* Step 0: side-by-side Reino object + class */}
       {step === 0 && reinoId && (
@@ -361,12 +382,12 @@ export default function DiagramaStep({ step, blanks, onChange, onCheck, dicaAber
       )}
 
       {/* Legend */}
-      <div style={{ display:"flex", gap:"0.75rem", marginTop:"0.5rem", fontSize:"0.65rem", color:"var(--muted)", flexWrap:"wrap" }}>
+      <div style={{ display:"flex", gap:"0.75rem", marginTop:"0.6rem", fontSize:"0.64rem", color:"var(--muted)", flexWrap:"wrap" }}>
         <span><b style={{ color:"rgba(148,163,184,0.6)" }}>+</b> = public</span>
         <span><b style={{ color:"rgba(148,163,184,0.6)" }}>-</b> = private</span>
-        <span style={{ color:"rgba(124,58,237,0.65)" }}>■ = campo desta etapa</span>
-        <span style={{ color:"rgba(148,163,184,0.25)" }}>? = próxima etapa</span>
-        <span>💡 = dica · Enter = verificar</span>
+        <span style={{ color:"rgba(148,163,184,0.35)" }}>🔒 = próxima etapa</span>
+        <span>💡 = dica</span>
+        <span>Enter = verificar</span>
       </div>
     </div>
   );

@@ -21,34 +21,43 @@ export default function SuccessScreen({ nome, classe, armaId, reinoId, blanks }:
   const armaNome = armaInf?.nome ?? "null";
 
   const varNome  = nome.split(",")[0].trim().replace(/[^a-zA-Z]/g,"").toLowerCase() || "heroi";
-  const varReino = reinoId || "midgard";
 
   const allDone = Object.keys(CFG).every(id => blanks[id]?.status === "ok");
 
-  // ── Attribute rows ────────────────────────────────────────────────────────
+  // ── Personagem attribute rows ─────────────────────────────────────────────
   const ATTRS: { bid: string; line: string }[] = [
-    { bid:"pav-reino",     line:` reinoId : String` },
-    { bid:"av-nome",       line:` nome : String` },
-    { bid:"av-classe",     line:` classe : String` },
-    { bid:"av-nivel",      line:` nivel : ${ans("at-nivel", blanks)}` },
-    { bid:"",              line:`- xp : int` },
-    { bid:"av-arma",       line:` arma : String` },
-    { bid:"",              line:`- armadura : String` },
-    { bid:"av-anel",       line:` anel : ${ans("at-anel", blanks)}` },
+    { bid:"pav-reino",  line:` reinoId : String → Reino` },
+    { bid:"pav-classe", line:` classeId : String → Classe` },
+    { bid:"av-nome",    line:` nome : String` },
+    { bid:"av-nivel",   line:` nivel : ${ans("at-nivel", blanks)}` },
+    { bid:"",           line:`- xp : int` },
+    { bid:"av-arma",    line:` arma : String` },
+    { bid:"",           line:`- armadura : String` },
+    { bid:"av-anel",    line:` anel : ${ans("at-anel", blanks)}` },
   ];
 
   const METHODS: { bid: string; line: string }[] = [
-    { bid:"mv-ctor",        line:` Personagem(nome : String, classe : String, reinoId : String)` },
+    { bid:"mv-ctor",        line:` Personagem(nome, classeId, reinoId)` },
     { bid:"mv-getNome",     line:` getNome() : ${ans("mr-getNome", blanks)}` },
     { bid:"",               line:`+ getNivel() : int` },
     { bid:"",               line:`+ getXp() : int` },
     { bid:"mv-equArma",     line:` equiparArma(arma : ${ans("mp-equArma", blanks)}) : void` },
     { bid:"mv-equArmadura", line:` equiparArmadura(armadura : String) : ${ans("mr-equArmadura", blanks)}` },
-    { bid:"",               line:`+ getClasse() : String` },
+    { bid:"",               line:`+ getClasse() : Classe` },
   ];
 
-  const armaLine = armaNome !== "null" ? `\n${varNome}.equiparArma("${armaNome}");` : "";
-  const atribJava = reino ? `\n// Atributo especial de ${reino.nome}: ${reino.atributo} = ${reino.valorBonus}` : "";
+  // ── Classe attribute rows ─────────────────────────────────────────────────
+  const CLASSE_ATTRS: { bid: string; line: string }[] = [
+    { bid:"ck-av-nome",  line:` nome : String` },
+    { bid:"ck-av-emoji", line:` emoji : String` },
+    { bid:"",            line:`- cor : String` },
+  ];
+
+  const CLASSE_METHODS: { bid: string; line: string }[] = [
+    { bid:"ck-mv-getNome", line:` getNome() : ${ans("ck-mr-getNome", blanks)}` },
+    { bid:"",              line:`+ getEmoji() : String` },
+    { bid:"",              line:`+ getCor() : String` },
+  ];
 
   return (
     <div style={{ minHeight:"100vh" }}>
@@ -83,7 +92,7 @@ export default function SuccessScreen({ nome, classe, armaId, reinoId, blanks }:
           )}
         </div>
 
-        {/* ── Object diagrams (side by side) ── */}
+        {/* ── Object diagrams (3 side by side) ── */}
         <div style={{ animation:"fadeUp 0.5s 0.1s ease both", opacity:0, animationFillMode:"forwards", marginBottom:"2rem" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"0.75rem" }}>
             <span>📦</span>
@@ -91,40 +100,17 @@ export default function SuccessScreen({ nome, classe, armaId, reinoId, blanks }:
             <span style={{ fontSize:"0.7rem", color:"var(--muted)" }}>— instâncias criadas</span>
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.65rem" }}>
-            {/* Personagem object */}
-            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"rgba(59,130,246,0.05)", border:"1px solid rgba(59,130,246,0.2)", borderRadius:"12px", overflow:"hidden" }}>
-              <div style={{ background:"rgba(59,130,246,0.12)", borderBottom:"1px solid rgba(59,130,246,0.2)", padding:"0.4rem 0.85rem", fontWeight:800, color:"#93c5fd" }}>
-                {varNome} : <span style={{ color:"#60a5fa" }}>Personagem</span>
-              </div>
-              {[
-                { k:"reinoId",  v:`"${varReino}"`, c:"#93c5fd" },
-                { k:"nome",     v:`"${nome}"`,     c:"#93c5fd" },
-                { k:"classe",   v:info.nome,        c:"#93c5fd" },
-                { k:"nivel",    v:"1",              c:"rgba(148,163,184,0.5)" },
-                { k:"xp",       v:"0",              c:"rgba(148,163,184,0.5)" },
-                { k:"arma",     v: armaId ? `"${armaNome}"` : "null", c: armaId ? "#93c5fd" : "rgba(148,163,184,0.3)" },
-                { k:"armadura", v:"null",           c:"rgba(148,163,184,0.3)" },
-                { k:"anel",     v:"null",           c:"rgba(148,163,184,0.3)" },
-              ].map(r => (
-                <div key={r.k} style={{ padding:"0.22rem 0.85rem", display:"flex", gap:"0.35rem", borderBottom:"1px solid rgba(255,255,255,0.02)" }}>
-                  <span style={{ color:"rgba(148,163,184,0.4)", minWidth:"60px" }}>{r.k}</span>
-                  <span style={{ color:"rgba(148,163,184,0.25)" }}>=</span>
-                  <span style={{ color:r.c }}>{r.v}</span>
-                </div>
-              ))}
-            </div>
-
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(175px, 1fr))", gap:"0.65rem" }}>
             {/* Reino object */}
             {reino ? (
               <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:`${reino.cor}08`, border:`1px solid ${reino.cor}25`, borderRadius:"12px", overflow:"hidden" }}>
                 <div style={{ background:`${reino.cor}12`, borderBottom:`1px solid ${reino.cor}20`, padding:"0.4rem 0.85rem", fontWeight:800, color:reino.cor }}>
-                  {varReino} : <span style={{ color:`${reino.cor}bb` }}>Reino</span>
+                  {reinoId} : <span style={{ color:`${reino.cor}bb` }}>Reino</span>
                 </div>
                 {[
-                  { k:"nome",       v:`"${reino.nome}"`,  c:"#93c5fd" },
-                  { k:"bonus",      v:`"${reino.bonus}"`, c:"#93c5fd" },
-                  { k:"valorBonus", v:String(reino.valorBonus), c:"#93c5fd", note:`${reino.atributo}` },
+                  { k:"nome",       v:`"${reino.nome}"` },
+                  { k:"bonus",      v:`"${reino.bonus}"`, note:`${reino.atributo}` },
+                  { k:"valorBonus", v:String(reino.valorBonus) },
                 ].map(r => (
                   <div key={r.k} style={{ padding:"0.22rem 0.85rem", display:"flex", gap:"0.35rem", alignItems:"baseline", borderBottom:"1px solid rgba(255,255,255,0.02)" }}>
                     <span style={{ color:`${reino.cor}60`, minWidth:"75px" }}>{r.k}</span>
@@ -133,55 +119,64 @@ export default function SuccessScreen({ nome, classe, armaId, reinoId, blanks }:
                     {"note" in r && r.note && <span style={{ fontSize:"0.58rem", color:`${reino.cor}55`, fontStyle:"italic", marginLeft:"0.35rem" }}>{r.note}</span>}
                   </div>
                 ))}
-                <div style={{ padding:"0.4rem 0.85rem", fontSize:"0.62rem", color:`${reino.cor}55`, fontStyle:"italic" }}>
-                  {`// referenciado por: ${varNome}.reinoId`}
-                </div>
               </div>
             ) : (
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:"12px", color:"var(--muted)", fontSize:"0.78rem" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:"12px", color:"var(--muted)", fontSize:"0.78rem", minHeight:"80px" }}>
                 Sem reino associado
               </div>
             )}
+
+            {/* Classe object */}
+            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:`${info.cor}08`, border:`1px solid ${info.cor}30`, borderRadius:"12px", overflow:"hidden" }}>
+              <div style={{ background:`${info.cor}15`, borderBottom:`1px solid ${info.cor}25`, padding:"0.4rem 0.85rem", fontWeight:800, color:info.cor }}>
+                {classe} : <span style={{ color:`${info.cor}bb` }}>Classe</span>
+              </div>
+              {[
+                { k:"nome",  v:`"${info.nome}"` },
+                { k:"emoji", v:`"${info.emoji}"` },
+                { k:"cor",   v:`"${info.cor}"` },
+              ].map(r => (
+                <div key={r.k} style={{ padding:"0.22rem 0.85rem", display:"flex", gap:"0.35rem", borderBottom:"1px solid rgba(255,255,255,0.02)" }}>
+                  <span style={{ color:`${info.cor}60`, minWidth:"52px" }}>{r.k}</span>
+                  <span style={{ color:"rgba(148,163,184,0.25)" }}>=</span>
+                  <span style={{ color:"#93c5fd" }}>{r.v}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Personagem object */}
+            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"rgba(59,130,246,0.05)", border:"1px solid rgba(59,130,246,0.2)", borderRadius:"12px", overflow:"hidden" }}>
+              <div style={{ background:"rgba(59,130,246,0.12)", borderBottom:"1px solid rgba(59,130,246,0.2)", padding:"0.4rem 0.85rem", fontWeight:800, color:"#93c5fd" }}>
+                {varNome} : <span style={{ color:"#60a5fa" }}>Personagem</span>
+              </div>
+              {[
+                { k:"reinoId",  v:`"${reinoId}"`,   c:"#93c5fd" },
+                { k:"classeId", v:`"${classe}"`,     c:"#93c5fd" },
+                { k:"nome",     v:`"${nome}"`,        c:"#93c5fd" },
+                { k:"nivel",    v:"1",                c:"rgba(148,163,184,0.5)" },
+                { k:"xp",       v:"0",                c:"rgba(148,163,184,0.5)" },
+                { k:"arma",     v: armaId ? `"${armaNome}"` : "null", c: armaId ? "#93c5fd" : "rgba(148,163,184,0.3)" },
+                { k:"armadura", v:"null",             c:"rgba(148,163,184,0.3)" },
+                { k:"anel",     v:"null",             c:"rgba(148,163,184,0.3)" },
+              ].map(r => (
+                <div key={r.k} style={{ padding:"0.22rem 0.85rem", display:"flex", gap:"0.35rem", borderBottom:"1px solid rgba(255,255,255,0.02)" }}>
+                  <span style={{ color:"rgba(148,163,184,0.4)", minWidth:"60px" }}>{r.k}</span>
+                  <span style={{ color:"rgba(148,163,184,0.25)" }}>=</span>
+                  <span style={{ color:r.c }}>{r.v}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* ── Class diagram ── */}
+        {/* ── Class diagrams (3 side by side) ── */}
         <div style={{ animation:"fadeUp 0.5s 0.2s ease both", opacity:0, animationFillMode:"forwards", marginBottom:"2rem" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"0.75rem" }}>
             <span>📐</span>
-            <h2 style={{ fontSize:"0.95rem", fontWeight:800 }}>Diagrama de Classe</h2>
+            <h2 style={{ fontSize:"0.95rem", fontWeight:800 }}>Diagramas de Classe</h2>
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 0.75fr", gap:"0.65rem" }}>
-            {/* Personagem class */}
-            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
-              <div style={{ background:"rgba(124,58,237,0.18)", borderBottom:"1px solid var(--border)", padding:"0.45rem 0.85rem", textAlign:"center", fontWeight:800, color:"var(--primary-light)", fontSize:"0.82rem" }}>
-                Personagem
-              </div>
-              <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"0.2rem" }}>
-                {ATTRS.map((a, i) => (
-                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", alignItems:"center", gap:"0.2rem", color: filled(a.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
-                    <span style={{ fontWeight:700, color: filled(a.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
-                      {a.bid ? ans(a.bid, blanks) : a.line.charAt(0)}
-                    </span>
-                    <span>{a.bid ? a.line : a.line.slice(1)}</span>
-                    {filled(a.bid, blanks) && <span style={{ marginLeft:"auto", fontSize:"0.55rem", color:"#22c55e" }}>✓</span>}
-                  </div>
-                ))}
-              </div>
-              <div style={{ paddingBottom:"0.2rem" }}>
-                {METHODS.map((m, i) => (
-                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", alignItems:"center", gap:"0.2rem", color: filled(m.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
-                    <span style={{ fontWeight:700, color: filled(m.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
-                      {m.bid ? ans(m.bid, blanks) : m.line.charAt(0)}
-                    </span>
-                    <span>{m.bid ? m.line : m.line.slice(1)}</span>
-                    {filled(m.bid, blanks) && <span style={{ marginLeft:"auto", fontSize:"0.55rem", color:"#22c55e" }}>✓</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(175px, 1fr))", gap:"0.65rem" }}>
             {/* Reino class */}
             <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
               <div style={{ background:"rgba(161,98,7,0.15)", borderBottom:"1px solid var(--border)", padding:"0.45rem 0.85rem", textAlign:"center", fontWeight:800, color:"#fbbf24", fontSize:"0.82rem" }}>
@@ -215,96 +210,101 @@ export default function SuccessScreen({ nome, classe, armaId, reinoId, blanks }:
                   </div>
                 ))}
               </div>
-              {/* Association label */}
-              <div style={{ padding:"0.3rem 0.85rem", borderTop:"1px solid var(--border)", fontSize:"0.6rem", color:"rgba(148,163,184,0.35)", fontStyle:"italic" }}>
-                Personagem ——uses——› Reino
+            </div>
+
+            {/* Classe class */}
+            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
+              <div style={{ background:"rgba(16,185,129,0.12)", borderBottom:"1px solid var(--border)", padding:"0.45rem 0.85rem", textAlign:"center", fontWeight:800, color:"#6ee7b7", fontSize:"0.82rem" }}>
+                Classe
+              </div>
+              <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"0.2rem" }}>
+                {CLASSE_ATTRS.map((a, i) => (
+                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", gap:"0.2rem", color: filled(a.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
+                    <span style={{ fontWeight:700, color: filled(a.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
+                      {a.bid ? ans(a.bid, blanks) : a.line.charAt(0)}
+                    </span>
+                    <span>{a.bid ? a.line : a.line.slice(1)}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ paddingBottom:"0.2rem" }}>
+                {CLASSE_METHODS.map((m, i) => (
+                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", gap:"0.2rem", color: filled(m.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
+                    <span style={{ fontWeight:700, color: filled(m.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
+                      {m.bid ? ans(m.bid, blanks) : m.line.charAt(0)}
+                    </span>
+                    <span>{m.bid ? m.line : m.line.slice(1)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Personagem class */}
+            <div style={{ fontFamily:"monospace", fontSize:"0.75rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
+              <div style={{ background:"rgba(124,58,237,0.18)", borderBottom:"1px solid var(--border)", padding:"0.45rem 0.85rem", textAlign:"center", fontWeight:800, color:"var(--primary-light)", fontSize:"0.82rem" }}>
+                Personagem
+              </div>
+              <div style={{ borderBottom:"1px solid var(--border)", paddingBottom:"0.2rem" }}>
+                {ATTRS.map((a, i) => (
+                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", alignItems:"center", gap:"0.2rem", color: filled(a.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
+                    <span style={{ fontWeight:700, color: filled(a.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
+                      {a.bid ? ans(a.bid, blanks) : a.line.charAt(0)}
+                    </span>
+                    <span>{a.bid ? a.line : a.line.slice(1)}</span>
+                    {filled(a.bid, blanks) && <span style={{ marginLeft:"auto", fontSize:"0.55rem", color:"#22c55e" }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+              <div style={{ paddingBottom:"0.2rem" }}>
+                {METHODS.map((m, i) => (
+                  <div key={i} style={{ padding:"0.2rem 0.85rem", display:"flex", alignItems:"center", gap:"0.2rem", color: filled(m.bid, blanks) ? "#86efac" : "rgba(148,163,184,0.4)" }}>
+                    <span style={{ fontWeight:700, color: filled(m.bid, blanks) ? "#22c55e" : "rgba(148,163,184,0.3)" }}>
+                      {m.bid ? ans(m.bid, blanks) : m.line.charAt(0)}
+                    </span>
+                    <span>{m.bid ? m.line : m.line.slice(1)}</span>
+                    {filled(m.bid, blanks) && <span style={{ marginLeft:"auto", fontSize:"0.55rem", color:"#22c55e" }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+              {/* Association labels */}
+              <div style={{ padding:"0.3rem 0.85rem", borderTop:"1px solid var(--border)", fontSize:"0.6rem", color:"rgba(148,163,184,0.3)", fontStyle:"italic" }}>
+                Personagem ──uses──▶ Classe, Reino
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Java Exercise ── */}
-        <div style={{ animation:"fadeUp 0.5s 0.3s ease both", opacity:0, animationFillMode:"forwards", background:"rgba(15,23,42,0.7)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"16px", overflow:"hidden" }}>
-          <div style={{ padding:"1rem 1.5rem", borderBottom:"1px solid rgba(124,58,237,0.2)", display:"flex", alignItems:"center", gap:"0.6rem" }}>
-            <span style={{ fontSize:"1.5rem" }}>☕</span>
+        {/* ── Student Task ── */}
+        <div style={{ animation:"fadeUp 0.5s 0.3s ease both", opacity:0, animationFillMode:"forwards", background:"rgba(15,23,42,0.7)", border:"1px solid rgba(124,58,237,0.25)", borderRadius:"16px", padding:"1.25rem 1.5rem", marginBottom:"2rem" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", marginBottom:"0.75rem" }}>
+            <span style={{ fontSize:"1.4rem" }}>☕</span>
             <div>
-              <h2 style={{ fontSize:"1rem", fontWeight:900 }}>Agora é com você — implemente no Java!</h2>
+              <h2 style={{ fontSize:"1rem", fontWeight:900 }}>Agora é com você!</h2>
               <p style={{ fontSize:"0.76rem", color:"var(--muted)", marginTop:"0.1rem" }}>
-                Você analisou duas classes: <strong style={{ color:"var(--primary-light)" }}>Personagem</strong> e <strong style={{ color:"#fbbf24" }}>Reino</strong>. Implemente as duas.
+                Implemente as 3 classes no Java e instancie o mesmo herói que você criou aqui.
               </p>
             </div>
           </div>
-
-          <div style={{ padding:"1.1rem 1.5rem" }}>
-            {/* Reino class */}
-            <p style={{ fontSize:"0.75rem", fontWeight:700, color:"#fbbf24", marginBottom:"0.4rem" }}>1. Classe Reino</p>
-            <div style={{ background:"rgba(0,0,0,0.3)", borderRadius:"10px", padding:"0.85rem 1.1rem", fontFamily:"'Courier New',monospace", fontSize:"0.75rem", lineHeight:1.75, border:"1px solid rgba(255,255,255,0.05)", marginBottom:"1rem", overflowX:"auto" }}>
-              <pre style={{ margin:0, color:"#e2e8f0", whiteSpace:"pre" }}>{`public class Reino {
-    private String nome;
-    private String bonus;
-    private int valorBonus;
-
-    public Reino(String nome, String bonus, int valorBonus) {
-        this.nome = nome;
-        this.bonus = bonus;
-        this.valorBonus = valorBonus;
-    }
-
-    public String getNome()    { return nome;       }
-    public String getBonus()   { return bonus;      }
-    public int getValorBonus() { return valorBonus; }
-}`}</pre>
-            </div>
-
-            {/* Personagem class */}
-            <p style={{ fontSize:"0.75rem", fontWeight:700, color:"var(--primary-light)", marginBottom:"0.4rem" }}>2. Classe Personagem</p>
-            <div style={{ background:"rgba(0,0,0,0.3)", borderRadius:"10px", padding:"0.85rem 1.1rem", fontFamily:"'Courier New',monospace", fontSize:"0.75rem", lineHeight:1.75, border:"1px solid rgba(255,255,255,0.05)", marginBottom:"1rem", overflowX:"auto" }}>
-              <pre style={{ margin:0, color:"#e2e8f0", whiteSpace:"pre" }}>{`public class Personagem {
-    private Reino reino;  // associação com Reino
-    private String nome;
-    private String classe;
-    private int nivel;
-    private int xp;
-    private String arma;
-    private String armadura;
-    private String anel;
-
-    public Personagem(String nome, String classe, Reino reino) {
-        this.nome   = nome;
-        this.classe = classe;
-        this.reino  = reino;
-        this.nivel  = 1;
-        this.xp     = 0;
-    }
-
-    public String getNome()  { return nome;  }
-    public int    getNivel() { return nivel; }
-    public int    getXp()    { return xp;    }
-    public String getClasse(){ return classe;}
-    public Reino  getReino() { return reino; }
-
-    public void equiparArma(String arma)         { this.arma     = arma;     }
-    public void equiparArmadura(String armadura) { this.armadura = armadura; }
-}`}</pre>
-            </div>
-
-            {/* Instantiation */}
-            <p style={{ fontSize:"0.75rem", fontWeight:700, color:"#22c55e", marginBottom:"0.4rem" }}>3. Instancie o mesmo herói aqui criado</p>
-            <div style={{ background:"rgba(0,0,0,0.3)", borderRadius:"10px", padding:"0.85rem 1.1rem", fontFamily:"'Courier New',monospace", fontSize:"0.75rem", lineHeight:1.9, border:"1px solid rgba(255,255,255,0.05)", overflowX:"auto" }}>
-              <pre style={{ margin:0, color:"#e2e8f0", whiteSpace:"pre" }}>{`Reino ${varReino} = new Reino("${reino?.nome ?? varReino}", "${reino?.bonus ?? ""}", ${reino?.valorBonus ?? 0});${atribJava}
-
-Personagem ${varNome} = new Personagem("${nome}", "${classe.toUpperCase()}", ${varReino});${armaLine}
-
-System.out.println(${varNome}.getNome());           // ${nome}
-System.out.println(${varNome}.getClasse());         // ${classe.toUpperCase()}
-System.out.println(${varNome}.getReino().getNome());// ${reino?.nome ?? varReino}
-System.out.println(${varNome}.getReino().getBonus());// ${reino?.bonus ?? ""}`}</pre>
-            </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(150px, 1fr))", gap:"0.5rem" }}>
+            {[
+              { emoji:reino?.emoji ?? "🏰", label:`classe Reino`, cor:reino?.cor ?? "#fbbf24", desc:`Atributos: nome, bonus, valorBonus` },
+              { emoji:info.emoji, label:`classe Classe`, cor:info.cor, desc:`Atributos: nome, emoji, cor` },
+              { emoji:"⚔️",       label:`classe Personagem`, cor:"#a78bfa", desc:`Referencia Reino e Classe` },
+            ].map(card => (
+              <div key={card.label} style={{ padding:"0.75rem", background:`${card.cor}08`, border:`1px solid ${card.cor}25`, borderRadius:"10px" }}>
+                <div style={{ fontSize:"1.25rem", marginBottom:"0.25rem" }}>{card.emoji}</div>
+                <div style={{ fontWeight:700, color:card.cor, fontSize:"0.78rem" }}>{card.label}</div>
+                <div style={{ fontSize:"0.67rem", color:"var(--muted)", marginTop:"0.2rem" }}>{card.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:"0.75rem", padding:"0.6rem 0.85rem", background:"rgba(34,197,94,0.06)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:"8px", fontSize:"0.73rem", color:"#86efac" }}>
+            💡 Dica: instancie <b>{varNome}</b> com reino <b>{reinoId}</b> e classe <b>{info.nome}</b> — os valores já estão nos diagramas de objeto acima!
           </div>
         </div>
 
         {/* ── CTA ── */}
-        <div style={{ display:"flex", gap:"0.75rem", justifyContent:"center", flexWrap:"wrap", marginTop:"2rem", animation:"fadeUp 0.5s 0.45s ease both", opacity:0, animationFillMode:"forwards" }}>
+        <div style={{ display:"flex", gap:"0.75rem", justifyContent:"center", flexWrap:"wrap", animation:"fadeUp 0.5s 0.45s ease both", opacity:0, animationFillMode:"forwards" }}>
           <Link href="/dashboard" className="btn btn-primary">Ver meus heróis</Link>
           <Link href="/criar-personagem" className="btn btn-ghost">Criar outro herói</Link>
         </div>

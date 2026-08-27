@@ -57,17 +57,12 @@ function B({ id, blanks, onChange, onCheck, stepBlanks }: {
     );
   }
   if (!stepBlanks.includes(id)) {
+    // Sem borda, sem ícone — apenas texto apagado que não parece interativo
     return (
-      <span
-        title="Desbloqueado na próxima etapa"
-        style={{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: CFG[id].w, fontFamily: "monospace", fontSize: "0.7rem",
-          color: "rgba(148,163,184,0.18)", padding: "2px 4px",
-          border: "1px dashed rgba(255,255,255,0.06)", borderRadius: "4px",
-          cursor: "not-allowed", userSelect: "none",
-        }}
-      >🔒</span>
+      <span style={{
+        fontFamily: "monospace", fontSize: "0.78rem",
+        color: "rgba(148,163,184,0.18)", userSelect: "none",
+      }}>···</span>
     );
   }
   return <BlankInput id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} />;
@@ -205,8 +200,8 @@ function PersonagemObjectDiagram({ nome, classe, armaId, reinoId, step }: {
   type Row = { k: string; v: string; active: boolean; dim: boolean };
   const rows: Row[] = [
     { k:"reinoId",  v: reinoId ? `"${reinoId}"` : "???",     active: step === 1 && !!reinoId, dim: !reinoId },
+    { k:"classeId", v: info ? `"${classe}"` : "???",          active: step === 1 && !!classe, dim: !classe },
     { k:"nome",     v: nome ? `"${nome}"` : "???",           active: step === 2 && nome.length > 0, dim: step < 2 },
-    { k:"classe",   v: info ? info.nome : "???",              active: step === 1 && !!classe, dim: !classe },
     { k:"nivel",    v: "1",                                   active: false, dim: step < 2 },
     { k:"xp",       v: "0",                                   active: false, dim: step < 2 },
     { k:"arma",     v: armaFake ? `"${armaFake}"` : "null",  active: step === 3 && !!armaFake, dim: false },
@@ -232,6 +227,77 @@ function PersonagemObjectDiagram({ nome, classe, armaId, reinoId, step }: {
           {r.active && !r.dim && <span style={{ marginLeft:"auto", fontSize:"0.58rem", color:"#60a5fa" }}>← agora</span>}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── Classe Object Diagram ────────────────────────────────────────────────────
+
+function ClasseObjectDiagram({ classe }: { classe: Classe | null }) {
+  if (!classe) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"80px", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:"12px", color:"var(--muted)", fontSize:"0.75rem" }}>
+        selecione uma classe
+      </div>
+    );
+  }
+  const info = CLASSES[classe];
+  return (
+    <div style={{ fontFamily:"monospace", fontSize:"0.78rem", background:`${info.cor}08`, border:`1px solid ${info.cor}30`, borderRadius:"12px", overflow:"hidden" }}>
+      <div style={{ background:`${info.cor}15`, borderBottom:`1px solid ${info.cor}25`, padding:"0.45rem 0.9rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
+        <span style={{ filter:`drop-shadow(0 0 6px ${info.cor})` }}>{info.emoji}</span>
+        <span style={{ fontWeight:800, color:info.cor }}>{classe}</span>
+        <span style={{ color:"rgba(148,163,184,0.4)" }}>: <span style={{ color:`${info.cor}cc` }}>Classe</span></span>
+      </div>
+      {[
+        { k:"nome",  v:`"${info.nome}"` },
+        { k:"emoji", v:`"${info.emoji}"` },
+        { k:"cor",   v:`"${info.cor}"` },
+      ].map(r => (
+        <div key={r.k} style={{ padding:"0.22rem 0.9rem", display:"flex", gap:"0.4rem", alignItems:"baseline", borderBottom:"1px solid rgba(255,255,255,0.02)" }}>
+          <span style={{ color:`${info.cor}70`, minWidth:"52px" }}>{r.k}</span>
+          <span style={{ color:"rgba(148,163,184,0.3)" }}>=</span>
+          <span style={{ color:"#93c5fd" }}>{r.v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Classe Class Diagram ─────────────────────────────────────────────────────
+
+function ClasseClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggle, stepBlanks }: {
+  blanks: Record<string, BS>;
+  onChange: (id: string, val: string) => void;
+  onCheck: (id: string) => void;
+  dicaAberta: string | null;
+  onToggle: (id: string | null) => void;
+  stepBlanks: string[];
+}) {
+  const bx = (id: string) => (
+    <B id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} stepBlanks={stepBlanks} />
+  );
+  const row = (ids: string[], children: React.ReactNode) => (
+    <UMLRow ids={ids} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks}>{children}</UMLRow>
+  );
+
+  return (
+    <div style={{ fontFamily:"monospace", fontSize:"0.82rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
+      <div style={{ background:"rgba(16,185,129,0.12)", borderBottom:"1px solid var(--border)", padding:"0.5rem 0.9rem", textAlign:"center", fontWeight:800, color:"#6ee7b7", letterSpacing:"0.07em" }}>
+        Classe
+      </div>
+      <div style={{ borderBottom:"1px solid var(--border)" }}>
+        <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>atributos</div>
+        {row(["ck-av-nome"], <>{bx("ck-av-nome")}{" nome : String"}</>)}
+        {row(["ck-av-emoji"], <>{bx("ck-av-emoji")}{" emoji : String"}</>)}
+        <div style={PRE}>{"- cor : String"}</div>
+      </div>
+      <div>
+        <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>métodos</div>
+        {row(["ck-mv-getNome", "ck-mr-getNome"], <>{bx("ck-mv-getNome")}{" getNome() : "}{bx("ck-mr-getNome")}</>)}
+        <div style={PRE}>{"+ getEmoji() : String"}</div>
+        <div style={{ ...PRE, borderBottom:"none" }}>{"+ getCor() : String"}</div>
+      </div>
     </div>
   );
 }
@@ -264,8 +330,8 @@ function PersonagemClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggl
       <div style={{ borderBottom:"1px solid var(--border)" }}>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>atributos</div>
         {row(["pav-reino"], <>{bx("pav-reino")}{" reinoId : String"}<span style={{ fontSize:"0.65rem", color:"rgba(148,163,184,0.3)", marginLeft:"4px" }}>{"→ Reino"}</span></>)}
+        {row(["pav-classe"], <>{bx("pav-classe")}{" classeId : String"}<span style={{ fontSize:"0.65rem", color:"rgba(148,163,184,0.3)", marginLeft:"4px" }}>{"→ Classe"}</span></>)}
         {row(["av-nome"], <>{bx("av-nome")}{" nome : String"}</>)}
-        {row(["av-classe"], <>{bx("av-classe")}{" classe : String"}</>)}
         {row(["av-nivel", "at-nivel"], <>{bx("av-nivel")}{" nivel : "}{bx("at-nivel")}</>)}
         <div style={PRE}>{"- xp : int"}</div>
         {row(["av-arma"], <>{bx("av-arma")}{" arma : String"}</>)}
@@ -276,28 +342,14 @@ function PersonagemClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggl
       {/* Methods */}
       <div>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>métodos</div>
-        {row(["mv-ctor"], <>{bx("mv-ctor")}{" Personagem(nome : String, classe : String, reinoId : String)"}</>)}
+        {row(["mv-ctor"], <>{bx("mv-ctor")}{" Personagem(nome, classeId, reinoId)"}</>)}
         {row(["mv-getNome", "mr-getNome"], <>{bx("mv-getNome")}{" getNome() : "}{bx("mr-getNome")}</>)}
         <div style={PRE}>{"+ getNivel() : int"}</div>
         <div style={PRE}>{"+ getXp() : int"}</div>
         {row(["mv-equArma", "mp-equArma"], <>{bx("mv-equArma")}{" equiparArma(arma : "}{bx("mp-equArma")}{") : void"}</>)}
         {row(["mv-equArmadura", "mr-equArmadura"], <>{bx("mv-equArmadura")}{" equiparArmadura(armadura : String) : "}{bx("mr-equArmadura")}</>)}
-        <div style={{ ...PRE, borderBottom:"none" }}>{"+ getClasse() : String"}</div>
+        <div style={{ ...PRE, borderBottom:"none" }}>{"+ getClasse() : Classe"}</div>
       </div>
-    </div>
-  );
-}
-
-// ─── Reino Reference Badge (shown in steps 1+) ───────────────────────────────
-
-function ReinoBadge({ reinoId }: { reinoId: string }) {
-  const r = REINOS[reinoId];
-  return (
-    <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", padding:"0.35rem 0.75rem", background:`${r.cor}10`, border:`1px solid ${r.cor}25`, borderRadius:"8px", marginBottom:"0.6rem", fontSize:"0.75rem" }}>
-      <span>{r.emoji}</span>
-      <span style={{ fontWeight:700, color:r.cor }}>{reinoId}</span>
-      <span style={{ color:"rgba(148,163,184,0.4)" }}>: Reino</span>
-      <span style={{ marginLeft:"auto", color:"rgba(148,163,184,0.35)", fontSize:"0.62rem" }}>associado ao Personagem →</span>
     </div>
   );
 }
@@ -339,53 +391,64 @@ export default function DiagramaStep({ step, blanks, onChange, onCheck, dicaAber
 
       {/* Step completion banner */}
       {stepDone && !done && (
-        <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", padding:"0.5rem 0.85rem", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:"8px", marginBottom:"0.75rem", fontSize:"0.75rem", color:"#86efac" }}>
-          <span>✓</span>
-          <span>Etapa {step + 1} concluída — clique em <b>Avançar</b> para desbloquear os próximos campos</span>
+        <div style={{ padding:"1rem", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:"10px", marginBottom:"0.75rem", textAlign:"center" }}>
+          <div style={{ fontSize:"1.3rem", marginBottom:"0.25rem" }}>✅</div>
+          <div style={{ fontWeight:700, color:"#86efac", fontSize:"0.85rem", marginBottom:"0.2rem" }}>
+            Etapa {step + 1} concluída!
+          </div>
+          <div style={{ fontSize:"0.75rem", color:"rgba(148,163,184,0.6)" }}>
+            Feche o diagrama e clique em <b style={{ color:"#86efac" }}>Avançar →</b> para desbloquear os próximos campos.
+          </div>
         </div>
       )}
       {!stepDone && (
         <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", padding:"0.4rem 0.85rem", background:"rgba(124,58,237,0.06)", border:"1px solid rgba(124,58,237,0.18)", borderRadius:"8px", marginBottom:"0.75rem", fontSize:"0.72rem", color:"var(--primary-light)" }}>
           <span>📝</span>
-          <span>Preencha os {stepBlanks.length - stepCorretos} campo{stepBlanks.length - stepCorretos !== 1 ? "s" : ""} desta etapa — os 🔒 serão desbloqueados nas próximas.</span>
+          <span>Preencha os <b>{stepBlanks.length - stepCorretos}</b> campo{stepBlanks.length - stepCorretos !== 1 ? "s" : ""} desta etapa — os demais são desbloqueados nas próximas etapas.</span>
         </div>
       )}
 
-      {/* Step 0: side-by-side Reino object + class */}
-      {step === 0 && reinoId && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1.15fr", gap:"0.65rem" }}>
-          <div>
-            <div style={{ fontSize:"0.65rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:"0.4rem" }}>objeto</div>
-            <ReinoObjectDiagram reinoId={reinoId} />
-          </div>
-          <div>
-            <div style={{ fontSize:"0.65rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:"0.4rem" }}>classe</div>
-            <ReinoClassDiagram blanks={blanks} onChange={onChange} onCheck={onCheck} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks} />
-          </div>
+      {/* ── DIAGRAMAS DE CLASSES ─────────────────────────────────────────────── */}
+      <div style={{ marginBottom:"1rem" }}>
+        <div style={{ fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:"0.4rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
+          <span>📐 diagramas de classes</span>
+          <span style={{ color:"rgba(148,163,184,0.15)", fontSize:"0.55rem" }}>Personagem usa ──▶ Classe, Reino</span>
         </div>
-      )}
-
-      {/* Step 0 without selection */}
-      {step === 0 && !reinoId && (
-        <div style={{ textAlign:"center", padding:"2rem", color:"var(--muted)", fontSize:"0.85rem", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:"12px" }}>
-          👆 Selecione um reino para ver os diagramas
-        </div>
-      )}
-
-      {/* Steps 1+: Personagem diagrams */}
-      {step > 0 && (
-        <>
-          {reinoId && <ReinoBadge reinoId={reinoId} />}
-          <PersonagemObjectDiagram nome={nome} classe={classe} armaId={armaId} reinoId={reinoId} step={step} />
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:"0.5rem" }}>
+          <ReinoClassDiagram blanks={blanks} onChange={onChange} onCheck={onCheck} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks} />
+          <ClasseClassDiagram blanks={blanks} onChange={onChange} onCheck={onCheck} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks} />
           <PersonagemClassDiagram blanks={blanks} onChange={onChange} onCheck={onCheck} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks} />
-        </>
-      )}
+        </div>
+      </div>
+
+      {/* ── DIAGRAMAS DE OBJETOS ─────────────────────────────────────────────── */}
+      <div style={{ marginBottom:"0.5rem" }}>
+        <div style={{ fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:"0.4rem" }}>
+          📦 diagramas de objetos
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(175px, 1fr))", gap:"0.5rem" }}>
+          <div>
+            <div style={{ fontSize:"0.55rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:"0.3rem", textAlign:"center" }}>instância: reino</div>
+            {reinoId ? <ReinoObjectDiagram reinoId={reinoId} /> : (
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"80px", border:"1px dashed rgba(255,255,255,0.06)", borderRadius:"12px", color:"var(--muted)", fontSize:"0.7rem" }}>selecione um reino</div>
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize:"0.55rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:"0.3rem", textAlign:"center" }}>instância: classe</div>
+            <ClasseObjectDiagram classe={classe} />
+          </div>
+          <div>
+            <div style={{ fontSize:"0.55rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:"0.3rem", textAlign:"center" }}>instância: personagem</div>
+            <PersonagemObjectDiagram nome={nome} classe={classe} armaId={armaId} reinoId={reinoId} step={step} />
+          </div>
+        </div>
+      </div>
 
       {/* Legend */}
       <div style={{ display:"flex", gap:"0.75rem", marginTop:"0.6rem", fontSize:"0.64rem", color:"var(--muted)", flexWrap:"wrap" }}>
         <span><b style={{ color:"rgba(148,163,184,0.6)" }}>+</b> = public</span>
         <span><b style={{ color:"rgba(148,163,184,0.6)" }}>-</b> = private</span>
-        <span style={{ color:"rgba(148,163,184,0.35)" }}>🔒 = próxima etapa</span>
+        <span style={{ color:"rgba(148,163,184,0.3)" }}>··· = desbloqueado na próxima etapa</span>
         <span>💡 = dica</span>
         <span>Enter = verificar</span>
       </div>

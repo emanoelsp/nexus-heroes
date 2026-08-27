@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Swal from "sweetalert2";
 import { useAuth } from "@/contexts/AuthContext";
 import { CLASSES, REINOS, ARMAS, type Classe } from "@/types";
 import { BLANK_IDS, initBlanks, STEP_DEFS, type BS, type StepDef } from "./config";
@@ -19,7 +19,6 @@ type HeroData = { nome: string; classe: Classe; armaId: string; reinoId: string;
 
 export default function CriarPersonagemPage() {
   const { user } = useAuth();
-  const router = useRouter();
 
   const [step, setStep]       = useState(0);
   const [reinoId, setReinoId] = useState("");
@@ -64,14 +63,50 @@ export default function CriarPersonagemPage() {
   async function handleForjar() {
     if (!classe || !user || !nome.trim()) return;
     setCarregando(true);
-    try {
-      const { criarPersonagem, equiparItem } = await import("@/services/personagens");
-      const id = await criarPersonagem(user.uid, nome.trim(), classe, reinoId || undefined);
-      if (armaId) await equiparItem(id, "arma", armaId);
-      setHeroCriado({ nome: nome.trim(), classe, armaId, reinoId, blanks });
-    } catch {
+
+    const cInfo = CLASSES[classe];
+    const rInfo = reinoId ? REINOS[reinoId] : null;
+
+    // Start Firestore in background while animation plays
+    let heroErr = false;
+    const heroPromise = (async () => {
+      try {
+        const { criarPersonagem, equiparItem } = await import("@/services/personagens");
+        const id = await criarPersonagem(user.uid, nome.trim(), classe, reinoId || undefined);
+        if (armaId) await equiparItem(id, "arma", armaId);
+      } catch {
+        heroErr = true;
+      }
+    })();
+
+    await Swal.fire({
+      html: `
+        <div style="font-family:system-ui;text-align:center;padding:0.5rem 0">
+          <div style="font-size:3.5rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 20px ${cInfo.cor})">${cInfo.emoji}</div>
+          ${rInfo ? `<div style="font-size:1.4rem;margin-bottom:0.5rem;filter:drop-shadow(0 0 10px ${rInfo.cor})">${rInfo.emoji}</div>` : ""}
+          <div style="font-size:1.6rem;font-weight:900;color:${cInfo.cor};margin-bottom:0.25rem">${nome}</div>
+          <div style="color:rgba(148,163,184,0.65);font-size:0.9rem;margin-bottom:0.75rem">${cInfo.nome}${rInfo ? ` · ${rInfo.nome}` : ""}</div>
+          ${rInfo ? `<div style="display:inline-block;padding:0.25rem 0.75rem;border-radius:99px;background:${rInfo.cor}22;border:1px solid ${rInfo.cor}40;color:${rInfo.cor};font-size:0.78rem;margin-bottom:0.75rem">${rInfo.bonus}</div>` : ""}
+          <div style="color:rgba(148,163,184,0.3);font-size:0.72rem;letter-spacing:0.08em;margin-top:0.5rem">✦ forjando na bigorna do destino… ✦</div>
+        </div>
+      `,
+      timer: 2800,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      background: "#0f172a",
+      color: "#e2e8f0",
+    });
+
+    await heroPromise;
+
+    if (heroErr) {
       setCarregando(false);
+      await Swal.fire({ icon:"error", title:"Erro ao forjar", text:"Tente novamente.", background:"#0f172a", color:"#e2e8f0", confirmButtonColor:"#7c3aed" });
+      return;
     }
+
+    setHeroCriado({ nome: nome.trim(), classe, armaId, reinoId, blanks });
   }
 
   const canAdvance =
@@ -149,7 +184,27 @@ export default function CriarPersonagemPage() {
               {REINOS_LISTA.map(([key, r]) => {
                 const sel = reinoId === key;
                 return (
-                  <div key={key} className="card-3d-wrapper" onClick={() => { setReinoId(key); setDiagAberto(true); }}>
+                  <div key={key} className="card-3d-wrapper" onClick={async () => {
+                    setReinoId(key);
+                    await Swal.fire({
+                      html: `
+                        <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
+                          <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${r.cor})">${r.emoji}</div>
+                          <div style="font-size:1.4rem;font-weight:900;color:${r.cor};margin-bottom:0.3rem">${r.nome}</div>
+                          <div style="color:rgba(148,163,184,0.6);font-size:0.82rem;line-height:1.5;margin-bottom:0.65rem">${r.desc}</div>
+                          <div style="display:inline-block;padding:0.2rem 0.7rem;border-radius:99px;background:${r.cor}20;border:1px solid ${r.cor}40;color:${r.cor};font-weight:700;font-size:0.8rem">${r.bonus}</div>
+                        </div>
+                      `,
+                      title: `Você escolheu: ${r.nome}!`,
+                      timer: 2400,
+                      timerProgressBar: true,
+                      confirmButtonText: "Continuar →",
+                      confirmButtonColor: r.cor,
+                      background: "#0f172a",
+                      color: "#e2e8f0",
+                    });
+                    setDiagAberto(true);
+                  }}>
                     <div className="card card-3d" style={{ padding:"1.1rem 1rem", cursor:"pointer", borderColor: sel ? r.cor : `${r.cor}20`, background: sel ? r.corFundo : "var(--bg2)", boxShadow: sel ? `0 0 22px ${r.cor}40` : "none", outline: sel ? `2px solid ${r.cor}` : "none", outlineOffset:"2px" }}>
                       <div style={{ fontSize:"1.75rem", marginBottom:"0.4rem", filter:`drop-shadow(0 0 8px ${r.cor})` }}>{r.emoji}</div>
                       <div style={{ fontWeight:800, fontSize:"0.85rem", color: sel ? r.cor : "var(--text)", marginBottom:"0.2rem" }}>{r.nome}</div>
@@ -181,7 +236,26 @@ export default function CriarPersonagemPage() {
                 {CLASSES_LISTA.map(([key, c]) => {
                   const sel = classe === key;
                   return (
-                    <div key={key} className="card-3d-wrapper" onClick={() => { setClasse(key); setDiagAberto(true); }}>
+                    <div key={key} className="card-3d-wrapper" onClick={async () => {
+                      setClasse(key);
+                      await Swal.fire({
+                        html: `
+                          <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
+                            <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${c.cor})">${c.emoji}</div>
+                            <div style="font-size:1.4rem;font-weight:900;color:${c.cor};margin-bottom:0.3rem">${c.nome}</div>
+                            <div style="color:rgba(148,163,184,0.6);font-size:0.82rem;line-height:1.5">${c.desc}</div>
+                          </div>
+                        `,
+                        title: `Você escolheu: ${c.nome}!`,
+                        timer: 2400,
+                        timerProgressBar: true,
+                        confirmButtonText: "Continuar →",
+                        confirmButtonColor: c.cor,
+                        background: "#0f172a",
+                        color: "#e2e8f0",
+                      });
+                      setDiagAberto(true);
+                    }}>
                       <div className="card card-3d" style={{ padding:"1rem 0.85rem", textAlign:"center", cursor:"pointer", borderColor: sel ? c.cor : `${c.cor}20`, background: sel ? c.corFundo : "var(--bg2)", boxShadow: sel ? `0 0 20px ${c.cor}40` : "none", outline: sel ? `2px solid ${c.cor}` : "none", outlineOffset:"2px" }}>
                         <div style={{ fontSize:"1.75rem", marginBottom:"0.3rem", filter:`drop-shadow(0 0 8px ${c.cor})` }}>{c.emoji}</div>
                         <div style={{ fontWeight:800, fontSize:"0.8rem", color: sel ? c.cor : "var(--text)" }}>{c.nome}</div>

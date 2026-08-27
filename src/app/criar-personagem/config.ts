@@ -9,12 +9,18 @@ export const CFG: Record<string, BlankCfg> = {
   "rk-mv-getNome": { ans:"+",      w:"36px", ex:"+ ou -",                      dica:"👁️ O Personagem precisa saber o nome do seu reino. O getter deve ser visível de fora da classe." },
   "rk-mr-getNome": { ans:"String", w:"58px", ex:"int, double, String, void",   dica:"👁️ getNome() retorna texto — 'Midgard', 'Valhara'... Que tipo Java representa texto?" },
 
-  // ── Personagem-Reino association blank ────────────────────────────────────
+  // ── Classe class blanks (prefix ck-) ─────────────────────────────────────
+  "ck-av-nome":    { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"⚔️ O nome da classe (Guerreiro, Mago...) é dado na criação e não muda. Deve ser privado." },
+  "ck-av-emoji":   { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🎨 O emoji é estado interno da Classe — acessa-se via getter, não diretamente." },
+  "ck-mv-getNome": { ans:"+",      w:"36px", ex:"+ ou -",                      dica:"👁️ Personagem.getClasse().getNome() precisa enxergar este getter de fora." },
+  "ck-mr-getNome": { ans:"String", w:"58px", ex:"int, double, String, void",   dica:"👁️ getNome() retorna 'Guerreiro', 'Mago'... Que tipo Java representa texto?" },
+
+  // ── Personagem association blanks ─────────────────────────────────────────
   "pav-reino":     { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🔗 O objeto Reino é parte do estado interno do Personagem — protegido como os outros atributos." },
+  "pav-classe":    { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🔗 O objeto Classe (Guerreiro, Mago...) é estado interno do Personagem — não exposto diretamente." },
 
   // ── Personagem attribute blanks ───────────────────────────────────────────
   "av-nome":        { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🔮 Heróis protegem seus segredos. Nenhum código externo toca diretamente neste campo — só via método." },
-  "av-classe":      { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🔮 A classe guerreiro/mago é estado interno. Mesma lógica do nome — consulte via getter." },
   "av-nivel":       { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"⚔️ O nível não pode ser forçado de fora — só o sistema de XP evolui o herói." },
   "at-nivel":       { ans:"int",    w:"58px", ex:"int, double, String, boolean", dica:"⚔️ Nível 5, nível 99, nunca 5.3. Que tipo Java não tem casas decimais?" },
   "av-arma":        { ans:"-",      w:"36px", ex:"+ ou -",                      dica:"🗡️ A espada fica na bainha. Ninguém encosta sem chamar equiparArma()." },
@@ -58,9 +64,9 @@ export const STEP_DEFS: StepDef[] = [
   {
     step: 1,
     titulo: "Escolha a Classe",
-    subtitulo: "Personagem possui uma referência ao seu Reino — isso é associação entre objetos.",
-    conceito: "🔒 Encapsulamento — atributos privados em Personagem",
-    blankIds: ["av-nome", "av-classe", "av-nivel", "pav-reino"],
+    subtitulo: "Classe é um objeto com atributos próprios — e Personagem referencia tanto a Classe quanto o Reino.",
+    conceito: "🔗 Associação — Personagem usa Classe e Reino",
+    blankIds: ["ck-av-nome","ck-av-emoji","ck-mv-getNome","ck-mr-getNome","av-nome","pav-classe","av-nivel","pav-reino"],
   },
   {
     step: 2,

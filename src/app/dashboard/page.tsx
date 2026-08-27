@@ -177,7 +177,7 @@ export default function DashboardPage() {
                         className="btn btn-ghost"
                         style={{ flex: 1, fontSize: "0.8rem", padding: "0.5rem" }}
                       >
-                        Equipar
+                        Ver Herói
                       </Link>
                       <button
                         onClick={() => handleDeletar(p, i)}

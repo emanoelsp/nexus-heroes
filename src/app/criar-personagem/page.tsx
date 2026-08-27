@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import Swal from "sweetalert2";
+// dynamic import — avoids SSR issues with document/window
+const swal = async (opts: object) => {
+  const { default: Swal } = await import("sweetalert2");
+  return (swal as (opts: object) => Promise<unknown>)(opts);
+};
 import { useAuth } from "@/contexts/AuthContext";
 import { CLASSES, REINOS, ARMAS, type Classe } from "@/types";
 import { BLANK_IDS, initBlanks, STEP_DEFS, type BS, type StepDef } from "./config";
@@ -79,7 +83,7 @@ export default function CriarPersonagemPage() {
       }
     })();
 
-    await Swal.fire({
+    await swal({
       html: `
         <div style="font-family:system-ui;text-align:center;padding:0.5rem 0">
           <div style="font-size:3.5rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 20px ${cInfo.cor})">${cInfo.emoji}</div>
@@ -102,7 +106,7 @@ export default function CriarPersonagemPage() {
 
     if (heroErr) {
       setCarregando(false);
-      await Swal.fire({ icon:"error", title:"Erro ao forjar", text:"Tente novamente.", background:"#0f172a", color:"#e2e8f0", confirmButtonColor:"#7c3aed" });
+      await swal({ icon:"error", title:"Erro ao forjar", text:"Tente novamente.", background:"#0f172a", color:"#e2e8f0", confirmButtonColor:"#7c3aed" });
       return;
     }
 
@@ -186,7 +190,7 @@ export default function CriarPersonagemPage() {
                 return (
                   <div key={key} className="card-3d-wrapper" onClick={async () => {
                     setReinoId(key);
-                    await Swal.fire({
+                    await swal({
                       html: `
                         <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
                           <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${r.cor})">${r.emoji}</div>
@@ -238,7 +242,7 @@ export default function CriarPersonagemPage() {
                   return (
                     <div key={key} className="card-3d-wrapper" onClick={async () => {
                       setClasse(key);
-                      await Swal.fire({
+                      await swal({
                         html: `
                           <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
                             <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${c.cor})">${c.emoji}</div>
@@ -309,7 +313,23 @@ export default function CriarPersonagemPage() {
                 {armasFilt.map(a => {
                   const sel = armaId === a.id;
                   return (
-                    <div key={a.id} onClick={() => { setArmaId(armaId === a.id ? "" : a.id); setDiagAberto(true); }} style={{ padding:"0.6rem 0.75rem", borderRadius:"10px", cursor:"pointer", border:`1px solid ${sel ? "var(--primary)" : "var(--border)"}`, background: sel ? "rgba(124,58,237,0.1)" : "var(--bg2)", display:"flex", alignItems:"center", gap:"0.4rem", outline: sel ? "2px solid rgba(124,58,237,0.35)" : "none", outlineOffset:"2px" }}>
+                    <div key={a.id} onClick={async () => {
+                      const novaArma = armaId === a.id ? "" : a.id;
+                      setArmaId(novaArma);
+                      if (novaArma) {
+                        await swal({
+                          html: `<div style="font-family:system-ui;text-align:center;padding:0.25rem 0"><div style="font-size:2.5rem;margin-bottom:0.4rem">${a.emoji}</div><div style="font-size:1.2rem;font-weight:900;color:#a78bfa;margin-bottom:0.2rem">${a.nome}</div><div style="color:rgba(148,163,184,0.6);font-size:0.8rem">Arma equipada!</div></div>`,
+                          timer: 1800,
+                          timerProgressBar: true,
+                          showConfirmButton: true,
+                          confirmButtonText: "Continuar →",
+                          confirmButtonColor: "#7c3aed",
+                          background: "#0f172a",
+                          color: "#e2e8f0",
+                        });
+                      }
+                      setDiagAberto(true);
+                    }} style={{ padding:"0.6rem 0.75rem", borderRadius:"10px", cursor:"pointer", border:`1px solid ${sel ? "var(--primary)" : "var(--border)"}`, background: sel ? "rgba(124,58,237,0.1)" : "var(--bg2)", display:"flex", alignItems:"center", gap:"0.4rem", outline: sel ? "2px solid rgba(124,58,237,0.35)" : "none", outlineOffset:"2px" }}>
                       <span style={{ fontSize:"1.1rem" }}>{a.emoji}</span>
                       <span style={{ fontSize:"0.78rem", fontWeight:600 }}>{a.nome}</span>
                     </div>

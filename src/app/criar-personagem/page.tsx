@@ -188,26 +188,19 @@ export default function CriarPersonagemPage() {
               {REINOS_LISTA.map(([key, r]) => {
                 const sel = reinoId === key;
                 return (
-                  <div key={key} className="card-3d-wrapper" onClick={async () => {
+                  <div key={key} className="card-3d-wrapper" onClick={() => {
                     setReinoId(key);
-                    await swal({
-                      html: `
-                        <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
-                          <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${r.cor})">${r.emoji}</div>
-                          <div style="font-size:1.4rem;font-weight:900;color:${r.cor};margin-bottom:0.3rem">${r.nome}</div>
-                          <div style="color:rgba(148,163,184,0.6);font-size:0.82rem;line-height:1.5;margin-bottom:0.65rem">${r.desc}</div>
-                          <div style="display:inline-block;padding:0.2rem 0.7rem;border-radius:99px;background:${r.cor}20;border:1px solid ${r.cor}40;color:${r.cor};font-weight:700;font-size:0.8rem">${r.bonus}</div>
-                        </div>
-                      `,
-                      title: `Você escolheu: ${r.nome}!`,
-                      timer: 2400,
+                    setDiagAberto(true);
+                    swal({
+                      toast: true,
+                      position: "top-end",
+                      html: `<div style="font-family:system-ui;display:flex;align-items:center;gap:0.6rem;padding:0.1rem 0"><span style="font-size:1.6rem;filter:drop-shadow(0 0 8px ${r.cor})">${r.emoji}</span><div><div style="font-weight:700;color:${r.cor};font-size:0.9rem">${r.nome}</div><div style="color:rgba(148,163,184,0.6);font-size:0.72rem">${r.bonus}</div></div></div>`,
+                      timer: 2200,
                       timerProgressBar: true,
-                      confirmButtonText: "Continuar →",
-                      confirmButtonColor: r.cor,
+                      showConfirmButton: false,
                       background: "#0f172a",
                       color: "#e2e8f0",
                     });
-                    setDiagAberto(true);
                   }}>
                     <div className="card card-3d" style={{ padding:"1.1rem 1rem", cursor:"pointer", borderColor: sel ? r.cor : `${r.cor}20`, background: sel ? r.corFundo : "var(--bg2)", boxShadow: sel ? `0 0 22px ${r.cor}40` : "none", outline: sel ? `2px solid ${r.cor}` : "none", outlineOffset:"2px" }}>
                       <div style={{ fontSize:"1.75rem", marginBottom:"0.4rem", filter:`drop-shadow(0 0 8px ${r.cor})` }}>{r.emoji}</div>
@@ -240,25 +233,19 @@ export default function CriarPersonagemPage() {
                 {CLASSES_LISTA.map(([key, c]) => {
                   const sel = classe === key;
                   return (
-                    <div key={key} className="card-3d-wrapper" onClick={async () => {
+                    <div key={key} className="card-3d-wrapper" onClick={() => {
                       setClasse(key);
-                      await swal({
-                        html: `
-                          <div style="font-family:system-ui;text-align:center;padding:0.25rem 0">
-                            <div style="font-size:3rem;margin-bottom:0.4rem;filter:drop-shadow(0 0 14px ${c.cor})">${c.emoji}</div>
-                            <div style="font-size:1.4rem;font-weight:900;color:${c.cor};margin-bottom:0.3rem">${c.nome}</div>
-                            <div style="color:rgba(148,163,184,0.6);font-size:0.82rem;line-height:1.5">${c.desc}</div>
-                          </div>
-                        `,
-                        title: `Você escolheu: ${c.nome}!`,
-                        timer: 2400,
+                      setDiagAberto(true);
+                      swal({
+                        toast: true,
+                        position: "top-end",
+                        html: `<div style="font-family:system-ui;display:flex;align-items:center;gap:0.6rem;padding:0.1rem 0"><span style="font-size:1.6rem;filter:drop-shadow(0 0 8px ${c.cor})">${c.emoji}</span><div><div style="font-weight:700;color:${c.cor};font-size:0.9rem">${c.nome}</div><div style="color:rgba(148,163,184,0.6);font-size:0.72rem">${c.desc.substring(0,45)}…</div></div></div>`,
+                        timer: 2200,
                         timerProgressBar: true,
-                        confirmButtonText: "Continuar →",
-                        confirmButtonColor: c.cor,
+                        showConfirmButton: false,
                         background: "#0f172a",
                         color: "#e2e8f0",
                       });
-                      setDiagAberto(true);
                     }}>
                       <div className="card card-3d" style={{ padding:"1rem 0.85rem", textAlign:"center", cursor:"pointer", borderColor: sel ? c.cor : `${c.cor}20`, background: sel ? c.corFundo : "var(--bg2)", boxShadow: sel ? `0 0 20px ${c.cor}40` : "none", outline: sel ? `2px solid ${c.cor}` : "none", outlineOffset:"2px" }}>
                         <div style={{ fontSize:"1.75rem", marginBottom:"0.3rem", filter:`drop-shadow(0 0 8px ${c.cor})` }}>{c.emoji}</div>
@@ -313,22 +300,22 @@ export default function CriarPersonagemPage() {
                 {armasFilt.map(a => {
                   const sel = armaId === a.id;
                   return (
-                    <div key={a.id} onClick={async () => {
+                    <div key={a.id} onClick={() => {
                       const novaArma = armaId === a.id ? "" : a.id;
                       setArmaId(novaArma);
+                      setDiagAberto(true);
                       if (novaArma) {
-                        await swal({
-                          html: `<div style="font-family:system-ui;text-align:center;padding:0.25rem 0"><div style="font-size:2.5rem;margin-bottom:0.4rem">${a.emoji}</div><div style="font-size:1.2rem;font-weight:900;color:#a78bfa;margin-bottom:0.2rem">${a.nome}</div><div style="color:rgba(148,163,184,0.6);font-size:0.8rem">Arma equipada!</div></div>`,
+                        swal({
+                          toast: true,
+                          position: "top-end",
+                          html: `<div style="font-family:system-ui;display:flex;align-items:center;gap:0.6rem;padding:0.1rem 0"><span style="font-size:1.6rem">${a.emoji}</span><div><div style="font-weight:700;color:#a78bfa;font-size:0.9rem">${a.nome}</div><div style="color:rgba(148,163,184,0.6);font-size:0.72rem">Arma selecionada!</div></div></div>`,
                           timer: 1800,
                           timerProgressBar: true,
-                          showConfirmButton: true,
-                          confirmButtonText: "Continuar →",
-                          confirmButtonColor: "#7c3aed",
+                          showConfirmButton: false,
                           background: "#0f172a",
                           color: "#e2e8f0",
                         });
                       }
-                      setDiagAberto(true);
                     }} style={{ padding:"0.6rem 0.75rem", borderRadius:"10px", cursor:"pointer", border:`1px solid ${sel ? "var(--primary)" : "var(--border)"}`, background: sel ? "rgba(124,58,237,0.1)" : "var(--bg2)", display:"flex", alignItems:"center", gap:"0.4rem", outline: sel ? "2px solid rgba(124,58,237,0.35)" : "none", outlineOffset:"2px" }}>
                       <span style={{ fontSize:"1.1rem" }}>{a.emoji}</span>
                       <span style={{ fontSize:"0.78rem", fontWeight:600 }}>{a.nome}</span>

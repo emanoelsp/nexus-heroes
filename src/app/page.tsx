@@ -46,14 +46,6 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontSize: "2rem", animation: "spin-slow 2s linear infinite" }}>🔮</div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}>
       {/* Background gradient orbs */}

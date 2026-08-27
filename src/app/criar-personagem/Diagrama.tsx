@@ -88,6 +88,7 @@ function UMLRow({ ids, children, dicaAberta, onToggle, stepBlanks }: {
         </span>
         {hasHint && (
           <button
+            type="button"
             onClick={() => onToggle(open ? null : mainId)}
             style={{ border:"none", cursor:"pointer", fontSize:"0.78rem", padding:"0.1rem 0.25rem", borderRadius:"4px", flexShrink:0, color: open ? "#f59e0b" : "rgba(148,163,184,0.25)", background: open ? "rgba(245,158,11,0.1)" : "transparent" }}
           >💡</button>
@@ -154,12 +155,13 @@ function ReinoClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggle, st
   onToggle: (id: string | null) => void;
   stepBlanks: string[];
 }) {
-  function Bx({ id }: { id: string }) {
-    return <B id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} stepBlanks={stepBlanks} />;
-  }
-  function Row({ ids, children }: { ids: string[]; children: React.ReactNode }) {
-    return <UMLRow ids={ids} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks}>{children}</UMLRow>;
-  }
+  // Funções regulares (não componentes) — evita desmonte/remonte no digitar
+  const bx = (id: string) => (
+    <B id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} stepBlanks={stepBlanks} />
+  );
+  const row = (ids: string[], children: React.ReactNode) => (
+    <UMLRow ids={ids} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks}>{children}</UMLRow>
+  );
 
   return (
     <div style={{ fontFamily:"monospace", fontSize:"0.82rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
@@ -170,15 +172,15 @@ function ReinoClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggle, st
       {/* Attributes */}
       <div style={{ borderBottom:"1px solid var(--border)" }}>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>atributos</div>
-        <Row ids={["rk-av-nome"]}><Bx id="rk-av-nome" />{" nome : String"}</Row>
+        {row(["rk-av-nome"], <>{bx("rk-av-nome")}{" nome : String"}</>)}
         <div style={PRE}>{"- bonus : String"}</div>
-        <Row ids={["rk-av-valor", "rk-at-valor"]}><Bx id="rk-av-valor" />{" valorBonus : "}<Bx id="rk-at-valor" /></Row>
+        {row(["rk-av-valor", "rk-at-valor"], <>{bx("rk-av-valor")}{" valorBonus : "}{bx("rk-at-valor")}</>)}
       </div>
 
       {/* Methods */}
       <div>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>métodos</div>
-        <Row ids={["rk-mv-getNome", "rk-mr-getNome"]}><Bx id="rk-mv-getNome" />{" getNome() : "}<Bx id="rk-mr-getNome" /></Row>
+        {row(["rk-mv-getNome", "rk-mr-getNome"], <>{bx("rk-mv-getNome")}{" getNome() : "}{bx("rk-mr-getNome")}</>)}
         <div style={PRE}>{"+ getBonus() : String"}</div>
         <div style={{ ...PRE, borderBottom:"none" }}>{"+ getValorBonus() : int"}</div>
       </div>
@@ -239,12 +241,13 @@ function PersonagemClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggl
   onToggle: (id: string | null) => void;
   stepBlanks: string[];
 }) {
-  function Bx({ id }: { id: string }) {
-    return <B id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} stepBlanks={stepBlanks} />;
-  }
-  function Row({ ids, children }: { ids: string[]; children: React.ReactNode }) {
-    return <UMLRow ids={ids} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks}>{children}</UMLRow>;
-  }
+  // Funções regulares (não componentes) — evita desmonte/remonte no digitar
+  const bx = (id: string) => (
+    <B id={id} blanks={blanks} onChange={onChange} onCheck={onCheck} stepBlanks={stepBlanks} />
+  );
+  const row = (ids: string[], children: React.ReactNode) => (
+    <UMLRow ids={ids} dicaAberta={dicaAberta} onToggle={onToggle} stepBlanks={stepBlanks}>{children}</UMLRow>
+  );
 
   return (
     <div style={{ fontFamily:"monospace", fontSize:"0.82rem", background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:"12px", overflow:"hidden" }}>
@@ -255,25 +258,25 @@ function PersonagemClassDiagram({ blanks, onChange, onCheck, dicaAberta, onToggl
       {/* Attributes */}
       <div style={{ borderBottom:"1px solid var(--border)" }}>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>atributos</div>
-        <Row ids={["pav-reino"]}><Bx id="pav-reino" />{" reinoId : String"}<span style={{ fontSize:"0.65rem", color:"rgba(148,163,184,0.3)", marginLeft:"4px" }}>{"→ Reino"}</span></Row>
-        <Row ids={["av-nome"]}><Bx id="av-nome" />{" nome : String"}</Row>
-        <Row ids={["av-classe"]}><Bx id="av-classe" />{" classe : String"}</Row>
-        <Row ids={["av-nivel", "at-nivel"]}><Bx id="av-nivel" />{" nivel : "}<Bx id="at-nivel" /></Row>
+        {row(["pav-reino"], <>{bx("pav-reino")}{" reinoId : String"}<span style={{ fontSize:"0.65rem", color:"rgba(148,163,184,0.3)", marginLeft:"4px" }}>{"→ Reino"}</span></>)}
+        {row(["av-nome"], <>{bx("av-nome")}{" nome : String"}</>)}
+        {row(["av-classe"], <>{bx("av-classe")}{" classe : String"}</>)}
+        {row(["av-nivel", "at-nivel"], <>{bx("av-nivel")}{" nivel : "}{bx("at-nivel")}</>)}
         <div style={PRE}>{"- xp : int"}</div>
-        <Row ids={["av-arma"]}><Bx id="av-arma" />{" arma : String"}</Row>
+        {row(["av-arma"], <>{bx("av-arma")}{" arma : String"}</>)}
         <div style={PRE}>{"- armadura : String"}</div>
-        <Row ids={["av-anel", "at-anel"]}><Bx id="av-anel" />{" anel : "}<Bx id="at-anel" /></Row>
+        {row(["av-anel", "at-anel"], <>{bx("av-anel")}{" anel : "}{bx("at-anel")}</>)}
       </div>
 
       {/* Methods */}
       <div>
         <div style={{ padding:"0.3rem 0.9rem 0.15rem", fontSize:"0.6rem", color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.1em" }}>métodos</div>
-        <Row ids={["mv-ctor"]}><Bx id="mv-ctor" />{" Personagem(nome : String, classe : String, reinoId : String)"}</Row>
-        <Row ids={["mv-getNome", "mr-getNome"]}><Bx id="mv-getNome" />{" getNome() : "}<Bx id="mr-getNome" /></Row>
+        {row(["mv-ctor"], <>{bx("mv-ctor")}{" Personagem(nome : String, classe : String, reinoId : String)"}</>)}
+        {row(["mv-getNome", "mr-getNome"], <>{bx("mv-getNome")}{" getNome() : "}{bx("mr-getNome")}</>)}
         <div style={PRE}>{"+ getNivel() : int"}</div>
         <div style={PRE}>{"+ getXp() : int"}</div>
-        <Row ids={["mv-equArma", "mp-equArma"]}><Bx id="mv-equArma" />{" equiparArma(arma : "}<Bx id="mp-equArma" />{") : void"}</Row>
-        <Row ids={["mv-equArmadura", "mr-equArmadura"]}><Bx id="mv-equArmadura" />{" equiparArmadura(armadura : String) : "}<Bx id="mr-equArmadura" /></Row>
+        {row(["mv-equArma", "mp-equArma"], <>{bx("mv-equArma")}{" equiparArma(arma : "}{bx("mp-equArma")}{") : void"}</>)}
+        {row(["mv-equArmadura", "mr-equArmadura"], <>{bx("mv-equArmadura")}{" equiparArmadura(armadura : String) : "}{bx("mr-equArmadura")}</>)}
         <div style={{ ...PRE, borderBottom:"none" }}>{"+ getClasse() : String"}</div>
       </div>
     </div>
